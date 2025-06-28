@@ -20,9 +20,8 @@ RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
 # IP-Adapter (بدون توكن - تأكد أن الرابط متاح علنًا)
 ARG HF_TOKEN
 
-RUN wget --header "Authorization: Bearer ${HF_TOKEN}" \
-     -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
-     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
+RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
+     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors && \
     wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
 
