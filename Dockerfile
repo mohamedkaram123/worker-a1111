@@ -17,8 +17,6 @@ RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
 RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
     https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
-# IP-Adapter (بدون توكن - تأكد أن الرابط متاح علنًا)
-ARG HF_TOKEN
 
 RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
      https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors && \
