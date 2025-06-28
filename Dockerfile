@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------- #
 #                         Stage 1: Download the models                         #
 # ---------------------------------------------------------------------------- #
-FROM alpine/git:2.43.0 as download
+FROM alpine/git:2.43.0 AS download
 
 RUN apk add --no-cache wget
 
@@ -11,22 +11,22 @@ RUN mkdir -p /models/Stable-diffusion \
 
 # Deliberate (لا يحتاج توكن)
 RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
-     https://huggingface.co/XpucT/Deliberate/resolve/main/Deliberate_v6.safetensors
+    https://huggingface.co/XpucT/Deliberate/resolve/main/Deliberate_v6.safetensors
 
-# SDXL Base
+# SDXL Base (لا يحتاج توكن حاليًا)
 RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
-     https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+    https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
-# IP-Adapter
+# IP-Adapter (بدون توكن - تأكد أن الرابط متاح علنًا)
 RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
-     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
+    https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
     wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
-     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
+    https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
 # ---------------------------------------------------------------------------- #
-FROM python:3.10.14-slim as build_final_image
+FROM python:3.10.14-slim AS build_final_image
 
 ARG A1111_RELEASE=v1.9.3
 
