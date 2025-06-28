@@ -21,7 +21,7 @@ RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
 RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
      https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors && \
     wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.yaml
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
