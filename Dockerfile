@@ -18,8 +18,11 @@ RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
     https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
 # IP-Adapter (بدون توكن - تأكد أن الرابط متاح علنًا)
-RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
-    https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
+ARG HF_TOKEN
+
+RUN wget --header "Authorization: Bearer ${HF_TOKEN}" \
+     -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
+     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
     wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
 
