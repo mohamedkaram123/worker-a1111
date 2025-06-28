@@ -3,8 +3,6 @@
 # ---------------------------------------------------------------------------- #
 FROM alpine/git:2.43.0 as download
 
-ARG HF_TOKEN
-
 RUN apk add --no-cache wget
 
 # إنشاء مجلدات النماذج
@@ -16,16 +14,13 @@ RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
      https://huggingface.co/XpucT/Deliberate/resolve/main/Deliberate_v6.safetensors
 
 # SDXL Base
-RUN wget --header "Authorization: Bearer ${HF_TOKEN}" \
-     -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
+RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
      https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
 
 # IP-Adapter
-RUN wget --header "Authorization: Bearer ${HF_TOKEN}" \
-     -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
+RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
      https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
-    wget --header "Authorization: Bearer ${HF_TOKEN}" \
-     -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
+    wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
      https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
 
 # ---------------------------------------------------------------------------- #
