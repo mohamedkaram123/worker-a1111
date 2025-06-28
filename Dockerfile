@@ -3,10 +3,30 @@
 # ---------------------------------------------------------------------------- #
 FROM alpine/git:2.43.0 as download
 
-# NOTE: CivitAI usually requires an API token, so you need to add it in the header
-#       of the wget command if you're using a model from CivitAI.
-RUN apk add --no-cache wget && \
-    wget -q -O /model.safetensors https://huggingface.co/XpucT/Deliberate/resolve/main/Deliberate_v6.safetensors
+ARG HF_TOKEN
+
+RUN apk add --no-cache wget
+
+# إنشاء مجلدات النماذج
+RUN mkdir -p /models/Stable-diffusion \
+             /models/IP-Adapter
+
+# Deliberate (لا يحتاج توكن)
+RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
+     https://huggingface.co/XpucT/Deliberate/resolve/main/Deliberate_v6.safetensors
+
+# SDXL Base
+RUN wget --header "Authorization: Bearer ${HF_TOKEN}" \
+     -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
+     https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0/resolve/main/sd_xl_base_1.0.safetensors
+
+# IP-Adapter
+RUN wget --header "Authorization: Bearer ${HF_TOKEN}" \
+     -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
+     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.safetensors && \
+    wget --header "Authorization: Bearer ${HF_TOKEN}" \
+     -O /models/IP-Adapter/ip-adapter-plus_sdxl.yaml \
+     https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sdxl.yaml
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
@@ -35,15 +55,14 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements_versions.txt && \
     python -c "from launch import prepare_environment; prepare_environment()" --skip-torch-cuda-test
 
-COPY --from=download /model.safetensors /model.safetensors
+# نسخ النماذج من المرحلة الأولى
+COPY --from=download /models /stable-diffusion-webui/models
 
-# install dependencies
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
 
 COPY test_input.json .
-
 ADD src .
 
 RUN chmod +x /start.sh
