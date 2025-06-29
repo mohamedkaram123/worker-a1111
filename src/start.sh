@@ -10,7 +10,6 @@ export PYTHONUNBUFFERED=true
 
 # تشغيل WebUI A1111 API فقط بدون واجهة
 python /stable-diffusion-webui/webui.py \
-  --xformers \
   --no-half-vae \
   --skip-python-version-check \
   --skip-torch-cuda-test \
