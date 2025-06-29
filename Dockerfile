@@ -21,8 +21,6 @@ RUN wget -O /models/ControlNet/control_v11p_sd15_openpose.pth \
 RUN wget -O /models/ControlNet/ip-adapter_sdxl.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
 
-RUN pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url https://download.pytorch.org/whl/cu118
-
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
 # ---------------------------------------------------------------------------- #
