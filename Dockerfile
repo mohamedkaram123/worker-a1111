@@ -3,11 +3,13 @@
 # ---------------------------------------------------------------------------- #
 FROM alpine/git:2.43.0 AS download
 
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget git
 
-# إنشاء مجلدات النماذج
+# إنشاء مجلدات النماذج والإضافات
 RUN mkdir -p /models/Stable-diffusion \
-             /models/ControlNet
+             /models/ControlNet \
+             /models/IP-Adapter \
+             /extensions/IP-Adapter
 
 # Deliberate v6 (Stable Diffusion 1.5 model)
 RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
@@ -17,14 +19,12 @@ RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
 RUN wget -O /models/ControlNet/control_v11p_sd15_openpose.pth \
     https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_openpose.pth
 
-
-# 1. تحميل نموذج IP-Adapter من Hugging Face
+# IP-Adapter Model
 RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
-     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
+    https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
 
-# 2. تحميل الإضافة من GitHub
-git clone https://github.com/tencent-ailab/IP-Adapter.git extensions/IP-Adapter
-
+# IP-Adapter Extension
+RUN git clone https://github.com/tencent-ailab/IP-Adapter.git /extensions/IP-Adapter
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
@@ -43,10 +43,11 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # تثبيت الأساسيات
 RUN apt-get update && \
     apt install -y \
-    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev libtcmalloc-minimal4 procps libgl1 libglib2.0-0 && \
+    fonts-dejavu-core rsync git jq moreutils aria2 wget libgoogle-perftools-dev \
+    libtcmalloc-minimal4 procps libgl1 libglib2.0-0 && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
-# تحميل A1111 + إضافات ControlNet و Lora
+# تحميل A1111 والإضافات
 RUN --mount=type=cache,target=/root/.cache/pip \
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
@@ -57,18 +58,22 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements_versions.txt && \
     python -c "from launch import prepare_environment; prepare_environment()" --skip-torch-cuda-test
 
-# نسخ الموديلات من المرحلة الأولى
+# نسخ الموديلات من مرحلة التنزيل
 COPY --from=download /models /stable-diffusion-webui/models
 
 # نسخ موديلات ControlNet إلى مجلد الامتداد
 RUN mkdir -p /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \
     cp /stable-diffusion-webui/models/ControlNet/*.pth /stable-diffusion-webui/extensions/sd-webui-controlnet/models/
 
-# نسخ المتطلبات الخاصة بك
+# نسخ إضافة IP-Adapter
+COPY --from=download /extensions/IP-Adapter /stable-diffusion-webui/extensions/IP-Adapter
+
+# تثبيت المتطلبات الإضافية
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
 
+# ملفات التشغيل
 COPY test_input.json .
 ADD src .
 
