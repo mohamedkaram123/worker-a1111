@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
 echo "Worker Initiated"
-
 echo "Starting WebUI API"
+
+# تحسين الأداء باستخدام TCMalloc
 TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc.so.\d" | head -n 1)"
 export LD_PRELOAD="${TCMALLOC}"
 export PYTHONUNBUFFERED=true
 
+# تشغيل A1111 مع API فقط بدون واجهة
 python /stable-diffusion-webui/webui.py \
   --xformers \
   --no-half-vae \
