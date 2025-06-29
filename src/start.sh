@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
-echo "Worker Initiated"
-echo "Starting WebUI API"
+echo "🚀 Worker Initiated"
+echo "🔧 Starting WebUI API"
 
-# تحسين الأداء باستخدام TCMalloc
+# استخدام TCMalloc لتحسين الأداء
 TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc.so.\d" | head -n 1)"
 export LD_PRELOAD="${TCMALLOC}"
 export PYTHONUNBUFFERED=true
 
-# تشغيل A1111 مع API فقط بدون واجهة
+# تشغيل WebUI A1111 API فقط بدون واجهة
 python /stable-diffusion-webui/webui.py \
   --xformers \
   --no-half-vae \
   --skip-python-version-check \
   --skip-torch-cuda-test \
   --skip-install \
-  --ckpt /stable-diffusion-webui/models/Stable-diffusion/Deliberate_v6.safetensors \
+  --ckpt /stable-diffusion-webui/models/Stable-diffusion/sd_xl_base_1.0.safetensors \
   --opt-sdp-attention \
   --disable-safe-unpickle \
   --port 3000 \
@@ -25,5 +25,6 @@ python /stable-diffusion-webui/webui.py \
   --no-hashing \
   --no-download-sd-model &
 
-echo "Starting RunPod Handler"
+# بدء معالج RunPod (handler)
+echo "⚙️ Starting RunPod Handler"
 python -u /handler.py
