@@ -6,13 +6,14 @@ echo "Starting WebUI API"
 TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc.so.\d" | head -n 1)"
 export LD_PRELOAD="${TCMALLOC}"
 export PYTHONUNBUFFERED=true
+
 python /stable-diffusion-webui/webui.py \
   --xformers \
   --no-half-vae \
   --skip-python-version-check \
   --skip-torch-cuda-test \
   --skip-install \
-  --ckpt /stable-diffusion-webui/models/Stable-diffusion/sd_xl_base_1.0.safetensors \
+  --ckpt /stable-diffusion-webui/models/Stable-diffusion/Deliberate_v6.safetensors \
   --opt-sdp-attention \
   --disable-safe-unpickle \
   --port 3000 \
