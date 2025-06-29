@@ -17,6 +17,15 @@ RUN wget -O /models/Stable-diffusion/Deliberate_v6.safetensors \
 RUN wget -O /models/ControlNet/control_v11p_sd15_openpose.pth \
     https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_openpose.pth
 
+
+# 1. تحميل نموذج IP-Adapter من Hugging Face
+RUN wget -O /models/IP-Adapter/ip-adapter-plus_sdxl.safetensors \
+     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-sdxl.safetensors
+
+# 2. تحميل الإضافة من GitHub
+git clone https://github.com/tencent-ailab/IP-Adapter.git extensions/IP-Adapter
+
+
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
 # ---------------------------------------------------------------------------- #
