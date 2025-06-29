@@ -49,7 +49,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     git reset --hard ${A1111_RELEASE} && \
     git clone https://github.com/Mikubill/sd-webui-controlnet.git extensions/sd-webui-controlnet && \
     git clone https://github.com/bmaltais/sd-webui-additional-networks.git extensions/sd-webui-additional-networks && \
-    pip install xformers && \
     pip install -r requirements_versions.txt && \
     python -c "from launch import prepare_environment; prepare_environment()" --skip-torch-cuda-test
 
