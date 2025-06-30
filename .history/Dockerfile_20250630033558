@@ -26,7 +26,7 @@ RUN wget -O /models/ControlNet/ip-adapter_sdxl.safetensors \
 # ---------------------------------------------------------------------------- #
 FROM python:3.10.14-slim AS build_final_image
 
-ARG A1111_RELEASE=v1.9.3
+ARG A1111_RELEASE=5ef669de080814067961f28357256e8fe27544f4
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PIP_PREFER_BINARY=1 \
@@ -34,6 +34,10 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+# 🧱 تثبيت المتطلبات الأساسية
+RUN pip install --upgrade pip && \
+    pip install torch==2.0.1 torchvision==0.15.2 --extra-index-url https://download.pytorch.org/whl/cu118
 
 RUN apt-get update && \
     apt install -y \
@@ -46,7 +50,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
     git reset --hard ${A1111_RELEASE} && \
-    pip install xformers && \
     git clone https://github.com/Mikubill/sd-webui-controlnet.git extensions/sd-webui-controlnet && \
     git clone https://github.com/bmaltais/sd-webui-additional-networks.git extensions/sd-webui-additional-networks && \
     pip install -r requirements_versions.txt && \
