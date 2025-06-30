@@ -7,8 +7,7 @@ RUN apk add --no-cache wget git
 
 # إنشاء مجلدات النماذج
 RUN mkdir -p /models/Stable-diffusion \
-             /models/ControlNet \
-             /models/codeformer
+             /models/ControlNet
 
 # ✅ Stable Diffusion XL Base
 RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
@@ -21,10 +20,6 @@ RUN wget -O /models/ControlNet/control_v11p_sd15_openpose.pth \
 # ✅ IP-Adapter SDXL (مدعوم ضمن ControlNet)
 RUN wget -O /models/ControlNet/ip-adapter_sdxl.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
-
-# ✅ CodeFormer لتحسين الوجوه
-RUN wget -O /models/codeformer/codeformer.pth \
-    https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
@@ -54,13 +49,6 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install xformers && \
     git clone https://github.com/Mikubill/sd-webui-controlnet.git extensions/sd-webui-controlnet && \
     git clone https://github.com/bmaltais/sd-webui-additional-networks.git extensions/sd-webui-additional-networks && \
-    # 🌟 إضافة GFPGAN لتحسين الوجوه
-    git clone https://github.com/TencentARC/GFPGAN.git repositories/GFPGAN && \
-    # 🌟 إضافة ReActor لاستبدال الوجوه بدقة عالية
-    git clone https://github.com/Gourieff/sd-webui-reactor.git extensions/sd-webui-reactor && \
-    # 🌟 إضافة FaceRestoration لتحسين جودة الوجوه
-    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-rembg.git extensions/stable-diffusion-webui-rembg && \
-    git clone https://github.com/facefusion/sd-webui-facefusion.git extensions/sd-webui-facefusion && \
     pip install -r requirements_versions.txt && \
     python -c "from launch import prepare_environment; prepare_environment()" --skip-torch-cuda-test
 
@@ -72,26 +60,10 @@ RUN mkdir -p /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \
     cp /stable-diffusion-webui/models/ControlNet/*.pth /stable-diffusion-webui/extensions/sd-webui-controlnet/models/ && \
     cp /stable-diffusion-webui/models/ControlNet/*.safetensors /stable-diffusion-webui/extensions/sd-webui-controlnet/models/
 
-# 🧠 نسخ نماذج CodeFormer إلى المجلدات المناسبة
-RUN mkdir -p /stable-diffusion-webui/models/FaceRestoration && \
-    cp /stable-diffusion-webui/models/codeformer/codeformer.pth /stable-diffusion-webui/models/FaceRestoration/
-
 # 🧾 متطلبات إضافية إن وجدت
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
-
-# إضافة سكربت تهيئة لضبط إعدادات تحسين الوجوه
-RUN echo '#!/bin/bash\n\
-echo "Configuring face restoration settings..."\n\
-mkdir -p /stable-diffusion-webui/models/FaceRestoration\n\
-echo "{\n\
-  \"face_restoration_model\": \"CodeFormer\",\n\
-  \"code_former_weight\": 0.8,\n\
-  \"face_restoration_strength\": 0.75\n\
-}" > /stable-diffusion-webui/config.json\n\
-cd /stable-diffusion-webui\n\
-python webui.py --api --nowebui --listen' > /start.sh
 
 # ملفات التشغيل
 COPY test_input.json .
