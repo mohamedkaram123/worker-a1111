@@ -7,8 +7,7 @@ RUN apk add --no-cache wget git
 
 # إنشاء مجلدات النماذج
 RUN mkdir -p /models/Stable-diffusion \
-             /models/ControlNet \
-             /models/codeformer
+             /models/ControlNet
 
 # ✅ Stable Diffusion XL Base
 RUN wget -O /models/Stable-diffusion/sd_xl_base_1.0.safetensors \
@@ -21,10 +20,6 @@ RUN wget -O /models/ControlNet/control_v11p_sd15_openpose.pth \
 # ✅ IP-Adapter SDXL (مدعوم ضمن ControlNet)
 RUN wget -O /models/ControlNet/ip-adapter_sdxl.safetensors \
     https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors
-
-# ✅ CodeFormer لتحسين الوجوه
-RUN wget -O /models/codeformer/codeformer.pth \
-    https://github.com/sczhou/CodeFormer/releases/download/v0.1.0/codeformer.pth
 
 # ---------------------------------------------------------------------------- #
 #                        Stage 2: Build the final image                        #
@@ -46,38 +41,16 @@ RUN apt-get update && \
     libtcmalloc-minimal4 procps libgl1 libglib2.0-0 && \
     apt-get autoremove -y && rm -rf /var/lib/apt/lists/* && apt-get clean -y
 
-# 🧠 تحميل A1111
+# 🧠 تحميل A1111 والإضافات
 RUN --mount=type=cache,target=/root/.cache/pip \
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git && \
     cd stable-diffusion-webui && \
     git reset --hard ${A1111_RELEASE} && \
-    pip install xformers
-
-# 🧠 تحميل الإضافات بشكل منفصل لتجنب أخطاء التنزيل
-WORKDIR /stable-diffusion-webui
-RUN mkdir -p extensions repositories models/FaceRestoration
-
-# إضافة ControlNet
-RUN git clone https://github.com/Mikubill/sd-webui-controlnet.git extensions/sd-webui-controlnet || echo "ControlNet clone failed"
-
-# إضافة Additional Networks
-RUN git clone https://github.com/bmaltais/sd-webui-additional-networks.git extensions/sd-webui-additional-networks || echo "Additional Networks clone failed"
-
-# 🌟 إضافة GFPGAN لتحسين الوجوه
-RUN git clone https://github.com/TencentARC/GFPGAN.git repositories/GFPGAN || echo "GFPGAN clone failed"
-
-# تم تخطي ReActor لأنه يسبب مشاكل أثناء البناء
-# RUN git clone https://github.com/Gourieff/sd-webui-reactor.git extensions/sd-webui-reactor
-
-# 🌟 إضافة FaceRestoration لتحسين جودة الوجوه
-RUN git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui-rembg.git extensions/stable-diffusion-webui-rembg || echo "REMBG clone failed"
-
-# تم تخطي FaceFusion لأنه يسبب مشاكل أثناء البناء
-# RUN git clone https://github.com/facefusion/sd-webui-facefusion.git extensions/sd-webui-facefusion
-
-# تثبيت متطلبات المشروع
-RUN pip install -r requirements_versions.txt && \
-    python -c "from launch import prepare_environment; prepare_environment()" --skip-torch-cuda-test || echo "Environment setup completed with warnings"
+    pip install xformers && \
+    git clone https://github.com/Mikubill/sd-webui-controlnet.git extensions/sd-webui-controlnet && \
+    git clone https://github.com/bmaltais/sd-webui-additional-networks.git extensions/sd-webui-additional-networks && \
+    pip install -r requirements_versions.txt && \
+    python -c "from launch import prepare_environment; prepare_environment()" --skip-torch-cuda-test
 
 # 🧠 نسخ النماذج
 COPY --from=download /models /stable-diffusion-webui/models
@@ -87,24 +60,13 @@ RUN mkdir -p /stable-diffusion-webui/extensions/sd-webui-controlnet/models && \
     cp /stable-diffusion-webui/models/ControlNet/*.pth /stable-diffusion-webui/extensions/sd-webui-controlnet/models/ && \
     cp /stable-diffusion-webui/models/ControlNet/*.safetensors /stable-diffusion-webui/extensions/sd-webui-controlnet/models/
 
-# 🧠 نسخ نماذج CodeFormer إلى المجلدات المناسبة
-RUN mkdir -p /stable-diffusion-webui/models/FaceRestoration && \
-    cp /stable-diffusion-webui/models/codeformer/codeformer.pth /stable-diffusion-webui/models/FaceRestoration/
-
 # 🧾 متطلبات إضافية إن وجدت
 COPY requirements.txt .
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --no-cache-dir -r requirements.txt
 
-# نسخ ملف start.sh إلى جذر الصورة
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
 # ملفات التشغيل
 COPY test_input.json .
-# Copy handler.py directly to root directory
-COPY src/handler.py /handler.py
-# Copy other files from src
 ADD src .
 
 RUN chmod +x /start.sh
