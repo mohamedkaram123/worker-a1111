@@ -49,4 +49,22 @@ mkdir -p /stable-diffusion-webui/models/FaceRestoration
 
 # بدء معالج RunPod (handler)
 echo "⚙️ Starting RunPod Handler"
-python -u /src/handler.py
+
+# Copy the handler.py to a known location
+cp /stable-diffusion-webui/handler.py /handler.py 2>/dev/null || echo "Could not copy handler.py from stable-diffusion-webui"
+
+# Run handler from the correct location
+if [ -f "/handler.py" ]; then
+  echo "Running handler.py from root"
+  python -u /handler.py
+elif [ -f "/stable-diffusion-webui/handler.py" ]; then
+  echo "Running handler.py from stable-diffusion-webui"
+  python -u /stable-diffusion-webui/handler.py
+else
+  echo "ERROR: handler.py not found. Checking locations:"
+  echo "Current directory:"
+  pwd
+  ls -la
+  echo "Stable-diffusion-webui directory:"
+  ls -la /stable-diffusion-webui
+fi

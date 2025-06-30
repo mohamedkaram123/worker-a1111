@@ -102,6 +102,9 @@ RUN chmod +x /start.sh
 
 # ملفات التشغيل
 COPY test_input.json .
+# Copy handler.py directly to root directory
+COPY src/handler.py /handler.py
+# Copy other files from src
 ADD src .
 
 RUN chmod +x /start.sh
