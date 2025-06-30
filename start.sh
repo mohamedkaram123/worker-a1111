@@ -49,4 +49,4 @@ mkdir -p /stable-diffusion-webui/models/FaceRestoration
 
 # بدء معالج RunPod (handler)
 echo "⚙️ Starting RunPod Handler"
-python -u /handler.py
+python -u /src/handler.py
