@@ -109,7 +109,6 @@ def handler(event):
     # Default to regular txt2img inference
     json = run_inference(event["input"])
     
-    
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     return json
 
