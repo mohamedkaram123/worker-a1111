@@ -1,6 +1,9 @@
 import time
 import runpod
 import requests
+import base64
+from io import BytesIO
+from PIL import Image
 from requests.adapters import HTTPAdapter, Retry
 
 LOCAL_URL = "http://127.0.0.1:3000/sdapi/v1"
@@ -44,6 +47,53 @@ def run_inference(inference_request):
     return response.json()
 
 
+def face_segment(image_data):
+    """
+    Process an image through the face segmentation preprocessor.
+    
+    Args:
+        image_data: Base64 encoded image or path to image file
+    
+    Returns:
+        Processed image with face segmentation
+    """
+    # Check if input is a base64 string or a file path
+    if isinstance(image_data, str) and image_data.startswith('data:image'):
+        # It's a base64 string
+        image_content = image_data
+    elif isinstance(image_data, str):
+        # It's a file path
+        try:
+            with open(image_data, 'rb') as img_file:
+                img = Image.open(img_file).convert('RGB')
+                buffered = BytesIO()
+                img.save(buffered, format="PNG")
+                image_content = f"data:image/png;base64,{base64.b64encode(buffered.getvalue()).decode('utf-8')}"
+        except Exception as e:
+            return {"error": f"Failed to open image file: {str(e)}"}
+    else:
+        return {"error": "Invalid image data format"}
+    
+    # Prepare the request for the ControlNet preprocessor
+    payload = {
+        "controlnet_module": "mediapipe_face_mesh",  # Face segmentation preprocessor
+        "controlnet_input_images": [image_content],
+        "controlnet_processor_res": 512,
+        "controlnet_threshold_a": 64,
+        "controlnet_threshold_b": 64
+    }
+    
+    try:
+        response = automatic_session.post(
+            url=f'{LOCAL_URL}/controlnet/detect',
+            json=payload,
+            timeout=120
+        )
+        return response.json()
+    except Exception as e:
+        return {"error": f"Face segmentation request failed: {str(e)}"}
+
+
 # ---------------------------------------------------------------------------- #
 #                                RunPod Handler                                #
 # ---------------------------------------------------------------------------- #
@@ -51,9 +101,14 @@ def handler(event):
     """
     This is the handler function that will be called by the serverless.
     """
-
+    
+    # Check if the request is for face segmentation
+    if event["input"].get("task") == "face_segment":
+        return face_segment(event["input"].get("image", ""))
+    
+    # Default to regular txt2img inference
     json = run_inference(event["input"])
-
+    
     # return the output that you want to be returned like pre-signed URLs to output artifacts
     return json
 
