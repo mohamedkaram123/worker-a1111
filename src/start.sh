@@ -3,6 +3,10 @@
 echo "🚀 Worker Initiated"
 echo "🔧 Starting WebUI API"
 
+# 🔄 Update Stable Diffusion WebUI to latest commit and dependencies
+git -C /stable-diffusion-webui pull --ff-only || true
+pip install --no-cache-dir -r /stable-diffusion-webui/requirements_versions.txt || true
+
 # استخدام TCMalloc لتحسين الأداء
 TCMALLOC="$(ldconfig -p | grep -Po "libtcmalloc.so.\d" | head -n 1)"
 export LD_PRELOAD="${TCMALLOC}"
